@@ -17,5 +17,5 @@ Feel free to explore the folders, check out the code, and provide feedback if yo
 Here's a brief overview of the folder structure:
 
 - `School/`: Contains code from my school-related projects.
-- `Personal/`: Holds code from my personal coding projects.
+- `CodeAcad/`: Holds code from my code academy coding projects.
 
