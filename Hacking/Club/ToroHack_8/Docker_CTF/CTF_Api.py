@@ -16,7 +16,7 @@ def get_token():
 def validate_token():
     token = request.json.get('token')
     if token in tokens:
-        return jsonify({'valid': True, 'message': 'The flag is ctf(ap1_fl4g)'})
+        return jsonify({'valid': True, 'message': 'The flag is ctf(********)'})
     else:
         return jsonify({'valid': False, 'message': 'Token is invalid'})
 
