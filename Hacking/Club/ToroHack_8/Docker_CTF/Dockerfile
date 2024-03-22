@@ -1,10 +1,19 @@
 FROM ubuntu:latest
 
-# Install SSH server
+# Install necessary packages
 RUN apt-get update && \
-    apt-get install -y openssh-server && \
+    apt-get install -y openssh-server cron samba python3 python3-pip && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# Copy api.py and set up Flask application
+COPY api.py /app/api.py
+WORKDIR /app
+RUN pip3 install Flask
+
+
+# Create SSH banner with custom message
+RUN echo "Welcome to trinity's machine." > /etc/ssh/banner
 
 # Create the trinity user
 RUN useradd -m -p $(openssl passwd -1 tiffany) trinity
@@ -18,27 +27,19 @@ RUN useradd -m -p $(openssl passwd -1 matrix) neo
 #Create the smith user
 RUN useradd -m -p $(openssl passwd -1 agent) smith
 
+# Add morpheus to the blue_pill_group
+RUN groupadd blue_pill_group && \
+    usermod -aG blue_pill_group morpheus
+
 # Enable password authentication
 RUN sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/' /etc/ssh/sshd_config
 
-# Create directories for trinity
-USER trinity
-RUN mkdir -p /home/trinity/Documents \
-             /home/trinity/Documents/Personal \
-             /home/trinity/Documents/Personal/Hobbies \
-             /home/trinity/Documents/Work \
-             /home/trinity/Documents/work/spreadsheets \
-             /home/trinity/Desktop \
-             /home/trinity/Desktop/random \
-             /home/trinity/Desktop/dontlookhere \
-             /home/trinity/Desktop/cats \
-             /home/trinity/Downloads \
-             /home/trinity/Pictures \
-             /home/trinity/Music \
-             /home/trinity/Videos
+# Configure SSH
+RUN mkdir /var/run/sshd && \
+    sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config && \
+    echo 'Banner /etc/ssh/banner' >> /etc/ssh/sshd_config
 
-# Create directories for morpheus
-USER morpheus
+# Set up directories for morpheus, neo, and trinity
 RUN mkdir -p /home/morpheus/Documents \
              /home/morpheus/Documents/random \
              /home/morpheus/Documents/random/randomer \
@@ -51,70 +52,79 @@ RUN mkdir -p /home/morpheus/Documents \
              /home/morpheus/Downloads \
              /home/morpheus/Pictures \
              /home/morpheus/Music \
-             /home/morpheus/Videos
-
-# Create directories for neo
-USER neo
-RUN mkdir -p /home/neo/Documents \
-             /home/neo/Documents/Personal \
-             /home/neo/Documents/Personal/Hobbies \
-             /home/neo/Documents/Work \
-             /home/neo/Documents/work/spreadsheets \
+             /home/morpheus/Videos \
+             /home/neo/Documents \
              /home/neo/Desktop \
-             /home/neo/Desktop/random \
-             /home/neo/Desktop/dontlookhere \
-             /home/neo/Desktop/cats \
              /home/neo/Downloads \
              /home/neo/Pictures \
              /home/neo/Music \
-             /home/neo/Videos
+             /home/neo/Videos \
+             /home/trinity/Documents/Personal/Hobbies \
+             /home/trinity/Desktop \
+             /home/trinity/Downloads \
+             /home/trinity/Pictures \
+             /home/trinity/Music \
+             /home/trinity/Videos 
+# Set permissions for home directories
+RUN chown -R morpheus:morpheus /home/morpheus && \
+    chown -R neo:neo /home/neo && \
+    chown -R trinity:trinity /home/trinity && \
+    chmod 700 /home/morpheus /home/neo /home/trinity
 
-# Create directories for smith    
-USER smith    
-RUN mkdir -p /home/smith/Documents \
-             /home/smith/Documents/Personal \
-             /home/smith/Documents/Personal/Hobbies \
-             /home/smith/Documents/Work \
-             /home/smith/Documents/work/spreadsheets \
-             /home/smith/Desktop \
-             /home/smith/Desktop/random \
-             /home/smith/Desktop/dontlookhere \
-             /home/smith/Desktop/cats \
-             /home/smith/Downloads \
-             /home/smith/Pictures \
-             /home/smith/Music \
-             /home/smith/Videos
 
 #add rot13-b64 flag
 USER trinity
-run echo 'cGdzKHJhcDBxMyk=' >> /home/trinity/Documents/Personal/Hobbies/bookclub.txt 
-run echo 'ctf(tr1n_h0m3)' >> /home/trinity/.hidden.txt
+RUN echo 'cGdzKHJhcDBxMyk=' >> /home/trinity/Documents/Personal/Hobbies/bookclub.txt 
 
 # Switch back to root user
 USER root
 
+#Insert base line flags
+RUN echo 'ctf(tr1n_h0m3)' >> /home/trinity/.hidden.txt
+RUN echo 'ctf(m0rph3us_h0me)' >> /home/morpheus/.hidden.txt
+RUN echo 'ctf(n30_h0m3)' >> /home/neo/.hidden.txt
 
-# Configure SSH
-RUN mkdir /var/run/sshd && \
-    echo 'trinity:tiffany' | chpasswd && \
-    sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin no/' /etc/ssh/sshd_config && \
-    echo 'Banner /etc/ssh/banner' >> /etc/ssh/sshd_config
 
-# Create SSH banner with custom message
-RUN echo "Welcome to trinity's machine." > /etc/ssh/banner
+# Move Group Access flag to another directory
+RUN mkdir /flags && \
+    echo 'ctf(n3o_is_the_1)' > /flags/group_access_flag.txt && \
+    chmod 440 /flags/group_access_flag.txt
 
-# Expose SSH port
-EXPOSE 22
+RUN chown blue_pill_group:blue_pill_group /flags/group_access_flag.txt
 
-# Start SSH service and interactive shell
-CMD ["/usr/sbin/sshd", "-D"]
-RUN echo 'Banner /etc/ssh/banner' >> /etc/ssh/sshd_config
+USER morpheus
+# Set up Cron job for morpheus
+RUN echo '* * * * * echo "ctf(m0rph3us_j0b)" >> /home/morpheus/Pictures/.cron_flag.txt' | crontab -
 
-# Create SSH banner with custom message
-RUN echo "Welcome to trinity's machine." > /etc/ssh/banner
+# Switch back to root user
+USER root
 
-# Expose SSH port
-EXPOSE 22
+# Add a flag in the /etc/passwd file
+RUN sed -i 's/^neo:.*$/neo:ctf(ch0s3n_0n3):18477:0:99999:7:::/' /etc/passwd
 
-# Start SSH service and interactive shell
-CMD ["/usr/sbin/sshd", "-D"]
+# Change ownership of neo's flag as root
+RUN echo "ctf(Alm0st_0ut)" >> /home/neo/neo_flag.txt
+RUN chown root:root /home/neo/neo_flag.txt
+RUN echo "neo ALL=(root) NOPASSWD: /bin/less /home/neo/neo_flag.txt" >> /etc/sudoers
+
+# Set root password and root flag
+RUN echo 'root:th3_matr1x' | chpasswd
+RUN echo "ctf(3scap3d_th3_m4tr1x)" >> /root/root.txt
+
+# Configure SMB share accessible to anonymous users
+RUN mkdir /srv/.smb_share && \
+    echo 'ctf(m1ltiplying_smb)' > /srv/.smb_share/flag.txt && \
+    chmod -R 777 /srv/.smb_share && \
+    printf "[global]\n   map to guest = bad user\n\n[public]\n   path = /srv/.smb_share\n   browsable = yes\n   read only = no\n   guest ok = yes" > /etc/samba/smb.conf
+
+COPY ./data.txt.enc /flags/data.txt.enc
+COPY ./public.pem /flags/public.pem
+
+# Add a cron job to display text every 30 seconds
+RUN echo '*/30 * * * * root echo "ctf(m1ltipl1er_pr0cesses)"' > /etc/cron.d/multiplier_process
+
+# Expose SSH, Flask, and SMB ports
+EXPOSE 22 5000 445
+
+# Start SSH and SMB services, and run Flask application
+CMD service cron start && service smbd start && /usr/sbin/sshd -D && python3 /app/api.py
