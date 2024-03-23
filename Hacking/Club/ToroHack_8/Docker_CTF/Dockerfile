@@ -29,6 +29,9 @@ RUN useradd -m -p $(openssl passwd -1 matrix) neo
 #Create the smith user
 RUN useradd -m -p $(openssl passwd -1 agent) smith
 
+# Modify the default shell for all users to bash
+RUN sed -i 's#/bin/sh#/bin/bash#g' /etc/passwd
+
 # Add morpheus to the blue_pill_group
 RUN groupadd blue_pill_group && \
     usermod -aG blue_pill_group morpheus
