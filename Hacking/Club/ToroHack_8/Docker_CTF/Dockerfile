@@ -80,9 +80,12 @@ RUN echo 'cGdzKHJhcDBxMyk=' >> /home/trinity/Documents/Personal/Hobbies/bookclub
 USER root
 
 #Insert base line flags
-RUN echo 'ctf(tr1n_h0m3)' >> /home/trinity/.hidden.txt
-RUN echo 'ctf(m0rph3us_h0me)' >> /home/morpheus/.hidden.txt
-RUN echo 'ctf(n30_h0m3)' >> /home/neo/.hidden.txt
+RUN echo 'ctf(tr1n_h0m3) Password for next user, Morpheus: Nebuchadnezzar' >> /home/trinity/.hidden.txt
+RUN echo 'The hints for this user is: look through Trinitys files to find an encoded flag' >> /home/trinity/.hidden.txt
+RUN echo 'ctf(m0rph3us_h0me) Password for next user, neo: matrix' >> /home/morpheus/.hidden.txt
+RUN echo 'The hint for this user is look into their cron and find all the files that are owned by the group morpheus is in' >> /home/morpheus/.hidden.txt
+RUN echo 'ctf(n30_h0m3) cat /etc/sudoers to find how to get to the final root user' >> /home/neo/.hidden.txt
+RUN echo 'The hints for this is /etc directory has some passwords in it you should look at XP' >> /home/neo/.hidden.txt
 
 
 # Move Group Access flag to another directory
@@ -124,7 +127,7 @@ COPY ./private.pem /flags/private.pem
 RUN echo '*/30 * * * * root echo "ctf(m1ltipl1er_pr0cesses)"' > /etc/cron.d/multiplier_process
 
 # Copy service file into the container
-#COPY flask-api.service /etc/systemd/system/flask-api.service
+COPY flask-api.service /etc/systemd/system/flask-api.service
 
 # Expose SSH, Flask, and SMB ports
 EXPOSE 22 5000 445
