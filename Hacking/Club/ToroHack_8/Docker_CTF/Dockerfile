@@ -4,6 +4,8 @@ FROM ubuntu:latest
 RUN apt-get update && \
     apt-get install -y openssh-server cron samba python3 python3-pip && \
     apt-get clean && \
+    apt-get install sudo &&\
+    apt-get install less && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Copy api.py and set up Flask application
@@ -65,6 +67,7 @@ RUN mkdir -p /home/morpheus/Documents \
              /home/trinity/Pictures \
              /home/trinity/Music \
              /home/trinity/Videos 
+
 # Set permissions for home directories
 RUN chown -R morpheus:morpheus /home/morpheus && \
     chown -R neo:neo /home/neo && \
@@ -108,7 +111,9 @@ RUN echo "ctf(ch0s3n_0n3)" >> /etc/passwd
 # Change ownership of neo's flag as root
 RUN echo "ctf(Alm0st_0ut)" >> /home/neo/neo_flag.txt
 RUN chown root:root /home/neo/neo_flag.txt
-RUN echo "neo ALL=(root) NOPASSWD: /bin/less /home/neo/neo_flag.txt" >> /etc/sudoers
+RUN echo "neo ALL=(root) NOPASSWD: /usr/bin/less /home/neo/neo_flag.txt" >> /etc/sudoers
+RUN chmod 400 /home/neo/neo_flag.txt
+
 
 # Set root password and root flag
 RUN echo 'root:th3_matr1x' | chpasswd
