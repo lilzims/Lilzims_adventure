@@ -90,7 +90,8 @@ RUN mkdir /flags && \
     echo 'ctf(n3o_is_the_1)' > /flags/group_access_flag.txt && \
     chmod 440 /flags/group_access_flag.txt
 
-RUN chown blue_pill_group:blue_pill_group /flags/group_access_flag.txt
+RUN chown root /flags/group_access_flag.txt
+RUN chgrp blue_pill_group /flags/group_access_flag.txt
 
 USER morpheus
 # Set up Cron job for morpheus
