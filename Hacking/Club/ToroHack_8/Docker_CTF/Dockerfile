@@ -123,8 +123,14 @@ COPY ./private.pem /flags/private.pem
 # Add a cron job to display text every 30 seconds
 RUN echo '*/30 * * * * root echo "ctf(m1ltipl1er_pr0cesses)"' > /etc/cron.d/multiplier_process
 
+# Copy service file into the container
+#COPY flask-api.service /etc/systemd/system/flask-api.service
+
 # Expose SSH, Flask, and SMB ports
 EXPOSE 22 5000 445
+
+# Change the file in app to make it executable
+RUN chmod +x /app/api.py
 
 # Start SSH and SMB services, and run Flask application
 CMD service cron start && service smbd start && /usr/sbin/sshd -D && python3 /app/api.py
