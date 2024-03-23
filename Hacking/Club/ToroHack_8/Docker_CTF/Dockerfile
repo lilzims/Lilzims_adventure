@@ -118,7 +118,7 @@ RUN mkdir /srv/.smb_share && \
     printf "[global]\n   map to guest = bad user\n\n[public]\n   path = /srv/.smb_share\n   browsable = yes\n   read only = no\n   guest ok = yes" > /etc/samba/smb.conf
 
 COPY ./data.txt.enc /flags/data.txt.enc
-COPY ./public.pem /flags/public.pem
+COPY ./private.pem /flags/private.pem
 
 # Add a cron job to display text every 30 seconds
 RUN echo '*/30 * * * * root echo "ctf(m1ltipl1er_pr0cesses)"' > /etc/cron.d/multiplier_process
