@@ -103,7 +103,7 @@ RUN echo '* * * * * echo "ctf(m0rph3us_j0b)" >> /home/morpheus/Pictures/.cron_fl
 USER root
 
 # Add a flag in the /etc/passwd file
-RUN sed -i 's/^neo:.*$/neo:ctf(ch0s3n_0n3):18477:0:99999:7:::/' /etc/passwd
+RUN echo "ctf(ch0s3n_0n3)" >> /etc/passwd
 
 # Change ownership of neo's flag as root
 RUN echo "ctf(Alm0st_0ut)" >> /home/neo/neo_flag.txt
