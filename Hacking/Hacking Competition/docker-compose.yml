@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  main:
+    build: ./main
+    container_name: hackathon_main
+    ports:
+      - "2222:22"    # SSH for main
+      - "9000:9000"  # Netcat
+      - "5000:5000"  # Flask
+    networks:
+      - hackathon_network
+    restart: always
+    logging:
+      options:
+        max-size: "10m"
+
+  mysql:
+    build: ./mysql
+    container_name: hackathon_mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: Z10nM@inframe
+      MYSQL_DATABASE: matrix_db
+      MYSQL_USER: hackuser
+      MYSQL_PASSWORD: hackpassword
+    ports:
+      - "3306:3306"
+    networks:
+      - hackathon_network
+    restart: always
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    logging:
+      options:
+        max-size: "10m"
+
+  exploit:
+    build: ./Exploit
+    container_name: hackathon_exploit
+    ports:
+      - "2223:22"  # SSH for exploit
+    networks:
+      - hackathon_network
+    restart: always
+    logging:
+      options:
+        max-size: "10m"
+
+  web:
+    build: ./Website         
+    container_name: hackathon_web
+    ports:
+      - "80:80"         
+    networks:
+      - hackathon_network
+    restart: always
+    logging:
+      options:
+        max-size: "10m"
+
+networks:
+  hackathon_network:
+    driver: bridge
